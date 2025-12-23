@@ -1,20 +1,45 @@
 # 📘 RAG Document Question Answering System
 
-This project implements a **Retrieval-Augmented Generation (RAG)** system that allows users to upload a document, ask questions, and receive answers grounded strictly in the content of that document. It demonstrates document chunking, embeddings, FAISS vector search, LLM answering, and grounding enforcement.
+A **Retrieval-Augmented Generation (RAG)** application that allows users to upload a document, ask questions, and receive answers grounded strictly in the document’s content.
+
+This project demonstrates document chunking, embeddings, FAISS vector search, LLM answering, and grounding enforcement.
 
 ---
 
-### File structure
+## 📂 Project Structure
 
-app.py - contains all the logic
-llm.py - code to call openrouter api
-prompt.py - contains prompt
-ui.py - contains streamlit ui
+```
+app.py      → Core RAG logic
+llm.py      → OpenRouter LLM API integration
+prompt.py   → Prompt template for grounded answering
+ui.py       → Streamlit user interface
+```
 
-### Run the app
-To run simply excecute '''uv sync'''
-create a .env file with '''OPENROUTER_API_KEY=KEY'''
-then '''streamlit run ui.py'''
+---
+
+## 🚀 How to Run
+
+### 1️⃣ Install dependencies
+
+```
+uv sync
+```
+
+### 2️⃣ Set API Key
+
+Create a `.env` file in the project root:
+
+```
+OPENROUTER_API_KEY=YOUR_KEY
+```
+
+### 3️⃣ Launch the app
+
+```
+streamlit run ui.py
+```
+
+---
 
 ## ✅ Models Used
 
@@ -22,15 +47,15 @@ then '''streamlit run ui.py'''
 
 **Model:** `sentence-transformers/all-MiniLM-L6-v2`
 
-**Reason for choice**
+**Why this model?**
 
-* Lightweight and fast
-* Produces 384-dimensional sentence embeddings
-* Strong semantic understanding for QA tasks
-* Works locally (no internet dependency)
-* Ideal for academic RAG implementations
+* Lightweight & fast
+* Produces 384-dimensional embeddings
+* Strong semantic understanding for QA
+* Runs locally (no internet dependency)
+* Ideal for academic & practical RAG systems
 
-This model converts document chunks into vector embeddings which are stored and used for retrieval.
+Embeddings are stored in **FAISS** for efficient retrieval.
 
 ---
 
@@ -39,68 +64,63 @@ This model converts document chunks into vector embeddings which are stored and 
 **Provider:** OpenRouter
 **Model:** `openai/gpt-4o-mini`
 
-**Reason for choice**
+**Why this model?**
 
-* Free / cost-efficient
+* Cost-efficient / often free
 * Reliable contextual reasoning
-* Works well with retrieval-based prompts
-* Good balance of speed and accuracy
+* Works well with retrieval prompts
+* Balanced accuracy & performance
 
-The LLM never sees the entire document — only retrieved relevant chunks — ensuring grounded responses.
+The LLM only receives retrieved chunks — never the full document — ensuring **grounded answers only**.
 
 ---
 
-## 🧩 Document Chunking & Retrieval Pipeline
+## 🧩 RAG Pipeline
 
 ### 1️⃣ Text Extraction
 
-* PDF files → processed using **PyPDF2**
+* PDFs → processed with **PyPDF2**
 * Other supported text formats → read directly
 
 ---
 
 ### 2️⃣ Chunking
 
-Documents are split into chunks using:
-
 ```
 chunk_size = 1000
 chunk_overlap = 200
 ```
 
-**Why overlap?**
-To preserve continuity across chunks and avoid losing important context.
+**Overlap** helps preserve continuity across chunks.
 
 ---
 
-### 3️⃣ Embedding + Vector Storage
+### 3️⃣ Embedding & Vector Storage
 
-* Each chunk is embedded using `all-MiniLM-L6-v2`
-* Stored in a **FAISS vector store**
-
-FAISS enables fast and efficient semantic similarity search on local machine (no external vector DB).
+* Chunks embedded using MiniLM
+* Stored in **FAISS vector store**
+* Enables fast local semantic search
 
 ---
 
 ### 4️⃣ Semantic Retrieval
 
-When a user asks a question:
-1️⃣ Query is embedded
-2️⃣ FAISS finds most relevant document chunks
-3️⃣ Top-k chunks (typically k = 3–5) are retrieved
+When a question is asked:
 
-Optional improvements applied:
+1️⃣ Query embedded
+2️⃣ FAISS retrieves relevant chunks
+3️⃣ Top-k chunks returned (typically k = 3–5)
 
-* Max-Marginal-Relevance retrieval to avoid duplicate chunks
+Optional enhancements:
+
+* Max-Marginal-Relevance to avoid duplicate chunks
 * Similarity threshold to reject weak matches
 
 ---
 
-## 🧠 LLM Answer Generation
+## 🧠 Answer Generation (Grounded Only)
 
-The LLM is not allowed to use outside knowledge.
-
-A structured prompt is sent:
+Prompt enforces grounding:
 
 ```
 You are an assistant answering strictly using the provided context.
@@ -112,14 +132,3 @@ Context:
 Question:
 <user query>
 ```
-
-The model then generates an answer **only based on retrieved content**.
-
----
-### ✔ Transparency & Explainability
-
-The system clearly displays:
-1️⃣ Retrieved Context Chunks used
-2️⃣ Final LLM Answer
-
----
